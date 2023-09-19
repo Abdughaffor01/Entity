@@ -5,72 +5,97 @@ using System.Net;
 namespace Infrastructure;
 public class CompanyService : ICompanyService
 {
-    private readonly DataContext _context;
-    public CompanyService(DataContext context)=>_context = context;
-    public async Task<Response<string>> AddCompanyAsync(AddCompanyDto model)
-    {
+	private readonly DataContext _context;
+	public CompanyService(DataContext context) => _context = context;
+	public async Task<Response<BaseCompanyDto>> AddCompanyAsync(AddCompanyDto model)
+	{
 		try
 		{
-			await _context.Companies.AddAsync(new Company()
+			var company = new Company()
 			{
 				Name = model.Name,
-			});
+			};
+
+			await _context.Companies.AddAsync(company);
 			await _context.SaveChangesAsync();
-			return new Response<string>(HttpStatusCode.OK,"Successfuly added company");
+			return new Response<BaseCompanyDto>(new BaseCompanyDto()
+			{
+				Id = company.Id,
+				Name = company.Name
+			});
 		}
 		catch (Exception ex)
 		{
-			return new Response<string>(HttpStatusCode.BadRequest,ex.Message);
+			return new Response<BaseCompanyDto>(HttpStatusCode.BadRequest, ex.Message);
 		}
-    }
-    public async Task<Response<GetCompanyDto>> GetCompanyByIdAsync(int companyId)
-    {
+	}
+
+	public async Task<Response<BaseCompanyDto>> UpdateCompanyAsync(AddCompanyDto model)
+	{
 		try
 		{
-			var company=await _context.Companies.FindAsync(companyId);
-			if (company == null) return new Response<GetCompanyDto>(HttpStatusCode.OK,"not found");
-			var employees = await _context.Employees.Where(x=>x.CompanyId==companyId).Select(x=>new GetEmployeesComanyDto { 
-				Id = x.Id,
-				Name=x.Name,
-			}).ToListAsync();
-            return new Response<GetCompanyDto>(new GetCompanyDto() { 
+			var company = await _context.Companies.FindAsync(model.Id);
+			company.Name = model.Name;
+			await _context.SaveChangesAsync();
+			
+			return new Response<BaseCompanyDto>(new BaseCompanyDto()
+			{
 				Id = company.Id,
-				Name = company.Name,
-				Employees= employees
+				Name = company.Name
 			});
 		}
 		catch (Exception ex)
 		{
-			return new Response<GetCompanyDto>(HttpStatusCode.BadRequest,ex.Message);
+			return new Response<BaseCompanyDto>(HttpStatusCode.BadRequest, ex.Message);
 		}
-    }
+	}
 
-    public async Task<Response<List<GetCompanyDto>>> GetCompaniesAsync()
-    {
-        try
-        {
-			var list=new List<GetCompanyDto>();
-			var company=await _context.Companies.ToListAsync();
-			foreach (var c in company)
-			{
-				var employees = await _context.Employees.Where(x=>x.CompanyId==c.Id).Select(x => new GetEmployeesComanyDto()
+
+	public async Task<Response<BaseCompanyDto>> GetCompanyByIdAsync(int companyId)
+	{
+		try
+		{
+			var company = await _context.Companies.FindAsync(companyId);
+			if (company == null) return new Response<BaseCompanyDto>(HttpStatusCode.BadRequest, "not found");
+
+
+			return new Response<BaseCompanyDto>(
+				new GetCompanyDto()
 				{
-					Id = x.Id,
-					Name = x.Name,
-				}).ToListAsync();
-				var com= new GetCompanyDto() { 
-					Id= c.Id,
-					Name= c.Name,
-					Employees= employees
-				};
-				list.Add(com);
-			}
-			return new Response<List<GetCompanyDto>>(list);
-        }
-        catch (Exception ex)
-        {
-			return new Response<List<GetCompanyDto>>(HttpStatusCode.BadRequest,ex.Message);
-        }
-    }
+					Id = company.Id,
+					Name = company.Name
+				}
+			);
+		}
+		catch (Exception ex)
+		{
+			return new Response<BaseCompanyDto>(HttpStatusCode.BadRequest, ex.Message);
+		}
+	}
+
+	public async Task<Response<List<GetCompanyDto>>> GetCompaniesAsync()
+	{
+		try
+		{
+
+			var companies = await _context.Companies.Select(c => new GetCompanyDto()
+			{
+				Id = c.Id,
+				Name = c.Name,
+				Employees = c.Employees.Select(e => new BaseEmployeeDto()
+				{
+					Id = e.Id,
+					Name = e.Name
+				}).ToList()
+			}).ToListAsync();
+
+
+			return new Response<List<GetCompanyDto>>(companies);
+		}
+		catch (Exception ex)
+		{
+			return new Response<List<GetCompanyDto>>(HttpStatusCode.BadRequest, ex.Message);
+		}
+	}
 
 }

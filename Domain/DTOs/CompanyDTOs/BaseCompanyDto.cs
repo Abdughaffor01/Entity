@@ -1,5 +1,6 @@
 ﻿namespace Domain;
-public abstract class BaseCompanyDto
+public class BaseCompanyDto
 {
+    public int Id { get; set; }
     public string Name { get; set; }
 }

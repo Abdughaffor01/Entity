@@ -7,13 +7,13 @@ var con = builder.Configuration.GetConnectionString("DefaultConnection");
 // Add services to the container.
 
 builder.Services.AddControllers();
-builder.Services.AddDbContext<DataContext>(c=>c.UseNpgsql(con));
+builder.Services.AddDbContext<DataContext>(c => c.UseNpgsql(con));
 
-builder.Services.AddScoped<ICompanyService,CompanyService>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IEmployeeSkillService, EmployeeSkillService>();
-builder.Services.AddScoped<ISkillService,SkillService>();
-builder.Services.AddScoped<IEmployeeAddressServices,EmployeeAddressService>();
+builder.Services.AddScoped<ISkillService, SkillService>();
+builder.Services.AddScoped<IEmployeeAddressServices, EmployeeAddressService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -1,7 +1,5 @@
 ﻿namespace Domain;
-public class GetCompanyDto
+public class GetCompanyDto : BaseCompanyDto
 {
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public List<GetEmployeesComanyDto> Employees { get; set; }=new List<GetEmployeesComanyDto>();
+    public List<BaseEmployeeDto> Employees { get; set; } = new List<BaseEmployeeDto>();
 }
