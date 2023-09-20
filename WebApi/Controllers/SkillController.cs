@@ -2,7 +2,7 @@
 using Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 namespace WebApi.Controllers;
-[Route("controller")]
+[Route("[controller]")]
 public class SkillController:ControllerBase
 {
     private readonly ISkillService _skillService;
@@ -10,5 +10,8 @@ public class SkillController:ControllerBase
 
 
     [HttpPost("AddSkillAsync")]
-    public async Task<Response<string>> AddSkillAsync(AddSkillDto model)=>await _skillService.AddSkillAsync(model);
+    public async Task<Response<BaseSkillDto>> AddSkillAsync(AddSkillDto model)=>await _skillService.AddSkillAsync(model);
+
+    [HttpDelete("DeleteSkillAsync")]
+    public async Task<Response<BaseSkillDto>> DeleteSkillAsync(int id)=>await _skillService.DeleteSkillAsync(id);
 }

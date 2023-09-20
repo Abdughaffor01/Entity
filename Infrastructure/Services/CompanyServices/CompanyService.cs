@@ -1,6 +1,5 @@
 ﻿using Domain;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.Design;
 using System.Net;
 namespace Infrastructure;
 public class CompanyService : ICompanyService
@@ -11,11 +10,7 @@ public class CompanyService : ICompanyService
 	{
 		try
 		{
-			var company = new Company()
-			{
-				Name = model.Name,
-			};
-
+			var company = new Company(){Name = model.Name};
 			await _context.Companies.AddAsync(company);
 			await _context.SaveChangesAsync();
 			return new Response<BaseCompanyDto>(new BaseCompanyDto()
@@ -29,15 +24,14 @@ public class CompanyService : ICompanyService
 			return new Response<BaseCompanyDto>(HttpStatusCode.BadRequest, ex.Message);
 		}
 	}
-
 	public async Task<Response<BaseCompanyDto>> UpdateCompanyAsync(AddCompanyDto model)
 	{
 		try
 		{
 			var company = await _context.Companies.FindAsync(model.Id);
+			if (company == null) return new Response<BaseCompanyDto>(HttpStatusCode.BadRequest,"not found");
 			company.Name = model.Name;
 			await _context.SaveChangesAsync();
-			
 			return new Response<BaseCompanyDto>(new BaseCompanyDto()
 			{
 				Id = company.Id,
@@ -49,16 +43,12 @@ public class CompanyService : ICompanyService
 			return new Response<BaseCompanyDto>(HttpStatusCode.BadRequest, ex.Message);
 		}
 	}
-
-
 	public async Task<Response<BaseCompanyDto>> GetCompanyByIdAsync(int companyId)
 	{
 		try
 		{
 			var company = await _context.Companies.FindAsync(companyId);
 			if (company == null) return new Response<BaseCompanyDto>(HttpStatusCode.BadRequest, "not found");
-
-
 			return new Response<BaseCompanyDto>(
 				new GetCompanyDto()
 				{
@@ -72,12 +62,10 @@ public class CompanyService : ICompanyService
 			return new Response<BaseCompanyDto>(HttpStatusCode.BadRequest, ex.Message);
 		}
 	}
-
 	public async Task<Response<List<GetCompanyDto>>> GetCompaniesAsync()
 	{
 		try
 		{
-
 			var companies = await _context.Companies.Select(c => new GetCompanyDto()
 			{
 				Id = c.Id,
@@ -88,8 +76,6 @@ public class CompanyService : ICompanyService
 					Name = e.Name
 				}).ToList()
 			}).ToListAsync();
-
-
 			return new Response<List<GetCompanyDto>>(companies);
 		}
 		catch (Exception ex)

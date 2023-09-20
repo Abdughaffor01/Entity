@@ -7,6 +7,7 @@ public class Response<T>
     public string Messege { get; set; }
     public T Data { get; set; }
     public Response(T data)=>Data=data;
+    public Response(HttpStatusCode code) => StatusCode = (int)code;
     public Response(HttpStatusCode code,string message,T data)
     {
         StatusCode = (int)code;

@@ -1,5 +1,4 @@
 ﻿using Domain.DTOs.EmployeeAddressDTOs;
 
 namespace Domain;
-public class GetEmployeeAddressDto: BaseEmployeeAddressDto
-{ }
+public class GetEmployeeAddressDto: BaseEmployeeAddressDto{ }

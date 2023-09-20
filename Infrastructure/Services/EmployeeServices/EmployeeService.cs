@@ -1,13 +1,12 @@
 ﻿using Domain;
 using Microsoft.EntityFrameworkCore;
-using System.Data.Entity;
 using System.Net;
 namespace Infrastructure;
 public class EmployeeService : IEmployeeService
 {
-    private readonly DataContext _dataContext;
-    public EmployeeService(DataContext dataContext)=>_dataContext=dataContext;
-    public async Task<Response<string>> AddEmployeeAsync(AddEmployeeDto model)
+    private readonly DataContext _context;
+    public EmployeeService(DataContext context)=>_context=context;
+    public async Task<Response<BaseEmployeeDto>> AddEmployeeAsync(AddEmployeeDto model)
     {
         try
         {
@@ -16,31 +15,36 @@ public class EmployeeService : IEmployeeService
                 Name = model.Name,
                 CompanyId = model.CompanyId,
             };
-
-            await _dataContext.Employees.AddAsync(newEmployee);
-            await _dataContext.SaveChangesAsync();
-
-            return new Response<string>(HttpStatusCode.OK,"Successfuly added employee");
+            await _context.Employees.AddAsync(newEmployee);
+            await _context.SaveChangesAsync();
+            return new Response<BaseEmployeeDto>(new BaseEmployeeDto()
+            {
+                Id = newEmployee.Id,
+                Name = newEmployee.Name,
+            });
         }
         catch (Exception ex)
         {
-            return new Response<string>(HttpStatusCode.BadRequest,ex.Message);
+            return new Response<BaseEmployeeDto>(HttpStatusCode.InternalServerError,ex.Message);
         }
     }
 
-    public async Task<Response<string>> DeleteEmployeeAsync(int id)
+    public async Task<Response<BaseEmployeeDto>> DeleteEmployeeAsync(int id)
     {
         try
         {
-            var find=await _dataContext.Employees.FindAsync(id);
-            if (find == null) return new Response<string>(HttpStatusCode.OK, "not found");
-            _dataContext.Employees.Remove(find);
-            await _dataContext.SaveChangesAsync();
-            return new Response<string>(HttpStatusCode.OK,"Successfuly deleted employee");
+            var find= await _context.Employees.FindAsync(id);
+            if (find == null) return new Response<BaseEmployeeDto>(HttpStatusCode.NotFound);
+            _context.Employees.Remove(find);
+            await _context.SaveChangesAsync();
+            return new Response<BaseEmployeeDto>(new BaseEmployeeDto() { 
+                Id = find.Id,
+                Name = find.Name,
+            });
         }
         catch (Exception ex)
         {
-            return new Response<string>(HttpStatusCode.BadRequest,ex.Message);
+            return new Response<BaseEmployeeDto>(HttpStatusCode.InternalServerError,ex.Message);
         }
     }
 
@@ -48,28 +52,59 @@ public class EmployeeService : IEmployeeService
     {
         try
         {
-            var find = await _dataContext.Employees.FirstOrDefaultAsync(e=>e.Id==id);
-            if (find == null) return new Response<GetEmployeeDto>(HttpStatusCode.OK,"not found");
-            var namecompany = await _dataContext.Companies.FirstOrDefaultAsync(s => s.Id == find.Id);
+            var find = await _context.Employees.FindAsync(id);
+            if (find == null) return new Response<GetEmployeeDto>(HttpStatusCode.NotFound);
             return new Response<GetEmployeeDto>(new GetEmployeeDto() { 
                 Id =find.Id,
                 Name =find.Name,
-                CompanyName = namecompany.Name,
             });
         }
         catch (Exception ex)
         {
-            return new Response<GetEmployeeDto>(HttpStatusCode.BadRequest, ex.Message);
+            return new Response<GetEmployeeDto>(HttpStatusCode.InternalServerError, ex.Message);
         }
     }
 
-    public Task<Response<List<GetEmployeeDto>>> GetEmployeesAsync()
+    public async Task<Response<List<GetEmployeeDto>>> GetEmployeesAsync()
     {
-        throw new NotImplementedException();
+        try
+        {
+            var employee = await _context.Employees.Select(x => new GetEmployeeDto()
+            {
+                Id = x.Id,
+                Name = x.Name,
+                EmpAddress = x.EmployeeAddress.Address,
+                CompanyName = new BaseCompanyDto()
+                {
+                    Id = x.Company.Id,
+                    Name = x.Company.Name,
+                }
+            }).ToListAsync();
+            return new Response<List<GetEmployeeDto>>(employee);
+        }
+        catch (Exception ex)
+        {
+            return new Response<List<GetEmployeeDto>>(HttpStatusCode.InternalServerError,ex.Message);
+        }
     }
 
-    public Task<Response<string>> UpdateEmployeeAsync(UpdateEmployeeDto model)
+    public async Task<Response<BaseEmployeeDto>> UpdateEmployeeAsync(AddEmployeeDto model)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var employee = await _context.Employees.FindAsync(model.Id);
+            if (employee == null) return new Response<BaseEmployeeDto>(HttpStatusCode.NotFound);
+            employee.Name = model.Name;
+            employee.CompanyId = model.CompanyId;
+            await _context.SaveChangesAsync();
+            return new Response<BaseEmployeeDto>(new BaseEmployeeDto() { 
+                Id=employee.Id,
+                Name=employee.Name,  
+            });
+        }
+        catch (Exception ex)
+        {
+            return new Response<BaseEmployeeDto>(HttpStatusCode.InternalServerError,ex.Message);
+        }
     }
 }

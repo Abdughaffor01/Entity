@@ -10,7 +10,19 @@ public class EmployeeController:ControllerBase
     public EmployeeController(IEmployeeService employeeService)=>_employeeService = employeeService;
 
 
+    [HttpGet("GetEmployeesAsync")]
+    public async Task<Response<List<GetEmployeeDto>>> GetEmployeesAsync()=>await _employeeService.GetEmployeesAsync();
+
+    [HttpGet("GetEmployeeById")]    
+    public async Task<Response<GetEmployeeDto>> GetEmployeeById(int id)=>await _employeeService.GetEmployeeById(id);
+
     [HttpPost("AddEmployeeAsync")]
-    public async Task<Response<string>> AddEmployeeAsync(AddEmployeeDto model)=>await _employeeService.AddEmployeeAsync(model);
+    public async Task<Response<BaseEmployeeDto>> AddEmployeeAsync(AddEmployeeDto model)=>await _employeeService.AddEmployeeAsync(model);
+
+    [HttpPut("UpdateEmployeeAsync")]
+    public async Task<Response<BaseEmployeeDto>> UpdateEmployeeAsync(AddEmployeeDto model)=>await _employeeService.UpdateEmployeeAsync(model);  
+
+    [HttpDelete("DeleteEmployeeAsync")]
+    public async Task<Response<BaseEmployeeDto>> DeleteEmployeeAsync(int id)=>await  _employeeService.DeleteEmployeeAsync(id);
 
 }

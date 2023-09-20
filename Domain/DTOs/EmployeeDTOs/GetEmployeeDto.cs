@@ -1,7 +1,10 @@
-﻿namespace Domain;
-public class GetEmployeeDto : BaseEmployeeDto
+﻿using Domain.DTOs.EmployeeAddressDTOs;
+
+namespace Domain;
+public class GetEmployeeDto
 {
-    public string CompanyName { get; set; }
-    public EmployeeAddress EmployeeAddress { get; set; }
-    public List<EmployeeSkillDto> Skills { get; set; } = new();
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public BaseCompanyDto CompanyName { get; set; }
+    public string EmpAddress { get; set; }
 }
