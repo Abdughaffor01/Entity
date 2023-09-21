@@ -84,4 +84,19 @@ public class CompanyService : ICompanyService
 		}
 	}
 
+    public async Task<Response<string>> DeleteCompanyAsync(int id)
+    {
+		try
+		{
+			var company = await _context.Companies.FindAsync(id);
+			if (company == null) return new Response<string>("not found");
+			_context.Companies.Remove(company);
+			await _context.SaveChangesAsync();
+			return new Response<string>("Successfuly deleted");
+		}
+		catch (Exception ex)
+		{
+			return new Response<string>(ex.Message);
+		}
+    }
 }

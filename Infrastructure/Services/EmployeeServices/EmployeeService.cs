@@ -14,6 +14,11 @@ public class EmployeeService : IEmployeeService
             {
                 Name = model.Name,
                 CompanyId = model.CompanyId,
+                EmployeeAddress=new ()
+                {
+                    Address=model.Address,
+                    EmployeeId=model.Id
+                }
             };
             await _context.Employees.AddAsync(newEmployee);
             await _context.SaveChangesAsync();
@@ -28,7 +33,6 @@ public class EmployeeService : IEmployeeService
             return new Response<BaseEmployeeDto>(HttpStatusCode.InternalServerError,ex.Message);
         }
     }
-
     public async Task<Response<BaseEmployeeDto>> DeleteEmployeeAsync(int id)
     {
         try
@@ -47,7 +51,6 @@ public class EmployeeService : IEmployeeService
             return new Response<BaseEmployeeDto>(HttpStatusCode.InternalServerError,ex.Message);
         }
     }
-
     public async Task<Response<GetEmployeeDto>> GetEmployeeById(int id)
     {
         try
@@ -57,6 +60,8 @@ public class EmployeeService : IEmployeeService
             return new Response<GetEmployeeDto>(new GetEmployeeDto() { 
                 Id =find.Id,
                 Name =find.Name,
+                CompanyName=find.Company.Name,
+                EmpAddress=find.EmployeeAddress.Address
             });
         }
         catch (Exception ex)
@@ -64,7 +69,6 @@ public class EmployeeService : IEmployeeService
             return new Response<GetEmployeeDto>(HttpStatusCode.InternalServerError, ex.Message);
         }
     }
-
     public async Task<Response<List<GetEmployeeDto>>> GetEmployeesAsync()
     {
         try
@@ -74,11 +78,11 @@ public class EmployeeService : IEmployeeService
                 Id = x.Id,
                 Name = x.Name,
                 EmpAddress = x.EmployeeAddress.Address,
-                CompanyName = new BaseCompanyDto()
-                {
-                    Id = x.Company.Id,
-                    Name = x.Company.Name,
-                }
+                CompanyName = x.Company.Name,
+                Skills = x.EmployeeSkills.Select(es=>new BaseSkillDto() { 
+                    Id=es.SkillId,
+                    SkillName=es.Skill.SkillName
+                }).ToList(),
             }).ToListAsync();
             return new Response<List<GetEmployeeDto>>(employee);
         }
@@ -87,13 +91,14 @@ public class EmployeeService : IEmployeeService
             return new Response<List<GetEmployeeDto>>(HttpStatusCode.InternalServerError,ex.Message);
         }
     }
-
     public async Task<Response<BaseEmployeeDto>> UpdateEmployeeAsync(AddEmployeeDto model)
     {
         try
         {
             var employee = await _context.Employees.FindAsync(model.Id);
             if (employee == null) return new Response<BaseEmployeeDto>(HttpStatusCode.NotFound);
+            var addres=await _context.EmployeeAddresses.FirstOrDefaultAsync(a=>a.EmployeeId==employee.Id);
+            if(addres!=null) addres.Address=model.Address;
             employee.Name = model.Name;
             employee.CompanyId = model.CompanyId;
             await _context.SaveChangesAsync();

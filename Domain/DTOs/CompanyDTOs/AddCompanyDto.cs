@@ -1,2 +1,5 @@
 ﻿namespace Domain;
-public class AddCompanyDto: BaseCompanyDto { }
+public class AddCompanyDto: BaseCompanyDto 
+{ 
+    
+}

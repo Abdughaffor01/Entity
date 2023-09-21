@@ -24,5 +24,4 @@ public class EmployeeController:ControllerBase
 
     [HttpDelete("DeleteEmployeeAsync")]
     public async Task<Response<BaseEmployeeDto>> DeleteEmployeeAsync(int id)=>await  _employeeService.DeleteEmployeeAsync(id);
-
 }
